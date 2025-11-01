@@ -3,6 +3,9 @@ import { Link, useParams } from 'react-router';
 import { usePuterStore } from '~/lib/puter'
 import { useNavigate } from 'react-router';
 import Summary from '~/components/Summary';
+import ATS from '~/components/ATS';
+import Details from '~/components/Details';
+
 
 export const meta = () => ([
     {title: 'ResumAI | Review'},
