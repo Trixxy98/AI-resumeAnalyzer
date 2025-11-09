@@ -11,6 +11,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import { usePuterStore } from "./lib/puter";
 import { useEffect } from "react";
+import { AuthProvider } from "./lib/auth-context";  
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -42,8 +43,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <script src="https://js.puter.com/v2/"></script>
+        <AuthProvider>
 
         {children}
+        </AuthProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -83,3 +86,5 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </main>
   );
 }
+
+

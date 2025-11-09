@@ -8,44 +8,51 @@ import { useState } from 'react'
 
 const ResumeCard = ({resume:{id, companyName, jobTitle, feedback, imagePath}}: {resume: Resume}) => {
   const {fs} = usePuterStore();
-    const [resumeUrl, setResumeUrl] = useState('');
-
+  const [resumeUrl, setResumeUrl] = useState('');
 
   useEffect(() => {
-        const loadResume = async () => {
-            const blob = await fs.read(imagePath);
-            if(!blob) return;
-            let url = URL.createObjectURL(blob);
-            setResumeUrl(url);
-        }
-  
-        loadResume();
-    }, [imagePath])
-
+    const loadResume = async () => {
+      const blob = await fs.read(imagePath);
+      if(!blob) return;
+      let url = URL.createObjectURL(blob);
+      setResumeUrl(url);
+    }
+    loadResume();
+  }, [imagePath])
 
   return (
-    <Link to={`/resume/${id}`} className='resume-card animate-in fade-in duration-1000'> 
-    <div className='resume-card-header'>
-        <div className='flex flex-col gap-2'>
-        {companyName && <h2 className='!text-black font-bold break-word'>{companyName}</h2>}
-        {jobTitle && <h3 className='text-lg text-gray-500 '>{jobTitle}</h3>}
-        {!companyName && !jobTitle && <h2 className='!text-black font-bold'>Resume</h2>}
-    </div>
-    <div className='flex-shrink-0'>
-        <ScoreCircle score={feedback.overallScore} />
-    </div>
-    </div>
-    {resumeUrl && (
-    <div className='gradient-border animate-in fade-in duration-1000'>
-        <div className='w-full h-full'>
-            <img
-            src={resumeUrl}
-            alt='resume'
-            className='w-full h-[350px] max-sm:h-[200px] object-cover object-top'/>
+    <Link to={`/resume/${id}`} className="group"> 
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+        <div className="p-6">
+          <div className="flex justify-between items-start mb-4">
+            <div className="space-y-2">
+              {companyName && (
+                <h2 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {companyName}
+                </h2>
+              )}
+              {jobTitle && (
+                <h3 className="text-gray-600">{jobTitle}</h3>
+              )}
+              {!companyName && !jobTitle && (
+                <h2 className="text-xl font-semibold text-gray-900">Resume</h2>
+              )}
+            </div>
+            <ScoreCircle score={feedback.overallScore} />
+          </div>
         </div>
-    </div>
-    )}
-    
+        {resumeUrl && (
+          <div className="border-t border-gray-100">
+            <div className="aspect-3/4] overflow-hidden">
+              <img
+                src={resumeUrl}
+                alt="resume preview"
+                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </Link>
   )
 }

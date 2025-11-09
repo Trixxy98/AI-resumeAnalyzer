@@ -1,9 +1,12 @@
+// routes/home.tsx
 import Navbar from "~/components/Navbar";
 import type { Route } from "./+types/home";
 import ResumeCard from "~/components/ResumeCard";
 import { useEffect, useState } from "react";
 import { usePuterStore } from "~/lib/puter";
 import { Link, useNavigate } from "react-router";
+import { useAuth } from "~/lib/auth-context";
+import { query } from "~/lib/database";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -13,36 +16,63 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const {auth, kv} = usePuterStore();
+  const { auth: puterAuth } = usePuterStore();
+  const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loadingResumes, setLoadingResumes] = useState(false);
 
   // Redirect to auth if not logged in
   useEffect(() => {
-    if(!auth.isAuthenticated) navigate('/auth?next=/');
-  }, [auth.isAuthenticated])
+    if (!authLoading && !user) {
+      navigate('/auth?next=/');
+    }
+  }, [user, authLoading, navigate]);
 
-  // Load resumes from KV store
+  // Load resumes from database
   useEffect(() => {
     const loadResumes = async () => {
+      if (!user) return;
+
       setLoadingResumes(true);
+      try {
+        const result = await query(
+          'SELECT * FROM resumes WHERE user_id = $1 ORDER BY created_at DESC',
+          [user.id]
+        );
 
-      // Fixed: Changed pattern from 'resume:*' to 'resume_*' to match the key format used in upload.tsx
-      const resumes = (await kv.list('resume_*', true)) as KVItem[]
+        const parsedResumes = result.rows.map(row => ({
+          id: row.id,
+          companyName: row.company_name,
+          jobTitle: row.job_title,
+          imagePath: row.image_path,
+          resumePath: row.resume_path,
+          feedback: row.feedback,
+        }));
 
-      const parsedResumes = resumes?.map((resume) => (
-        JSON.parse(resume.value) as Resume
-      ))
-
-      setResumes(parsedResumes || []);
-      setLoadingResumes(false);
-    }
+        setResumes(parsedResumes);
+      } catch (error) {
+        console.error('Failed to load resumes:', error);
+      } finally {
+        setLoadingResumes(false);
+      }
+    };
     
-    if(auth.isAuthenticated) {
+    if (user) {
       loadResumes();
     }
-  }, [auth.isAuthenticated])
+  }, [user]);
+
+  if (authLoading) {
+  return (
+    <main className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="text-gray-600 mt-4">Loading your resumes...</p>
+      </div>
+    </main>
+  );
+}
 
   return (
     <main className="bg-[url('/images/bg-main.svg')] bg-cover">

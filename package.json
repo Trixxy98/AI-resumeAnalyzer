@@ -11,14 +11,20 @@
   "dependencies": {
     "@react-router/node": "^7.9.2",
     "@react-router/serve": "^7.9.2",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/pg": "^8.15.6",
+    "@types/uuid": "^10.0.0",
+    "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "isbot": "^5.1.31",
     "pdfjs-dist": "^5.4.296",
+    "pg": "^8.16.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-dropzone": "^14.3.8",
     "react-router": "^7.9.2",
     "tailwind-merge": "^3.3.1",
+    "uuid": "^13.0.0",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

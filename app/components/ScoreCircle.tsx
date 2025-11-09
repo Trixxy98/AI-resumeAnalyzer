@@ -1,51 +1,48 @@
 const ScoreCircle = ({ score = 75 }: { score: number }) => {
   const radius = 40;
-  const stroke = 8;
+  const stroke = 6;
   const normalizedRadius = radius - stroke / 2;
   const circumference = 2 * Math.PI * normalizedRadius;
   const progress = score / 100;
   const strokeDashoffset = circumference * (1 - progress);
 
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return '#10b981';
+    if (score >= 60) return '#f59e0b';
+    return '#ef4444';
+  };
+
   return (
-    <div className="relative w-[100px] h-[100px]">
+    <div className="relative w-20 h-20">
       <svg
         height="100%"
         width="100%"
         viewBox="0 0 100 100"
         className="transform -rotate-90"
       >
-        {/* Background circle */}
         <circle
           cx="50"
           cy="50"
           r={normalizedRadius}
-          stroke="#e5e7eb"
+          stroke="#f3f4f6"
           strokeWidth={stroke}
           fill="transparent"
         />
-        {/* Partial circle with gradient */}
-        <defs>
-          <linearGradient id="grad" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#FF97AD" />
-            <stop offset="100%" stopColor="#5171FF" />
-          </linearGradient>
-        </defs>
         <circle
           cx="50"
           cy="50"
           r={normalizedRadius}
-          stroke="url(#grad)"
+          stroke={getScoreColor(score)}
           strokeWidth={stroke}
           fill="transparent"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
+          className="transition-all duration-1000 ease-out"
         />
       </svg>
-
-      {/* Score and issues */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-semibold text-sm">{`${score}/100`}</span>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="font-semibold text-gray-900 text-sm">{score}</span>
       </div>
     </div>
   );
