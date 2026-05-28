@@ -1,87 +1,162 @@
-# Welcome to React Router!
+# ResumAI
 
-A modern, production-ready template for building full-stack React applications using React Router.
+ResumAI is a full-stack resume analyzer built with React Router + TypeScript.  
+Users can sign up, upload a PDF resume, run AI feedback analysis, and review ATS-style scoring with improvement tips.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## Tech Stack
 
-## Features
+- React 19 + React Router 7 (SSR enabled)
+- TypeScript
+- Tailwind CSS 4
+- PostgreSQL (`pg`)
+- `bcryptjs` for password hashing
+- Puter SDK (cloud file storage + AI chat)
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## Core Features
 
-## Getting Started
+- Email/password authentication with DB-backed session tokens
+- Resume upload (PDF)
+- PDF-to-image conversion for preview
+- AI feedback parsing into structured JSON score data
+- Resume history listing per user
+- Detailed review page:
+  - Overall score
+  - ATS score + tips
+  - Tone & style
+  - Content
+  - Structure
+  - Skills
 
-### Installation
+## Routes
 
-Install the dependencies:
+### Pages
+
+- `/` Home
+- `/auth` Login/Signup
+- `/upload` Upload + Analyze
+- `/resume/:id` Resume details
+
+### API
+
+- `/api/auth/check`
+- `/api/auth/login`
+- `/api/auth/signup`
+- `/api/auth/logout`
+- `/api/resumes`
+
+## Requirements
+
+- Node.js 20+
+- npm
+- PostgreSQL 16+ (local)
+
+## Local Setup
+
+### 1) Clone and install
 
 ```bash
-npm install
+git clone https://github.com/Trixxy98/AI-resumeAnalyzer.git
+cd AI-resumeAnalyzer
+npm ci
 ```
 
-### Development
+### 2) Setup PostgreSQL
 
-Start the development server with HMR:
+Create DB:
+
+```bash
+createdb resumai
+```
+
+Run schema:
+
+```bash
+psql -d resumai -f schema.sql
+```
+
+If needed, enable extensions manually:
+
+```bash
+psql -d resumai -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto";'
+psql -d resumai -c 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'
+```
+
+### 3) Configure environment
+
+Create `.env` in project root (`AI-resumeAnalyzer/.env`):
+
+```env
+DB_USER=rith
+DB_HOST=localhost
+DB_NAME=resumai
+DB_PASSWORD=harith1234
+DB_PORT=5432
+```
+
+Adjust values to your local PostgreSQL credentials.
+
+### 4) Run development server
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+App URL: `http://localhost:5173`
 
-## Building for Production
+## Scripts
 
-Create a production build:
+- `npm run dev` Run development server
+- `npm run build` Build production output
+- `npm run start` Serve built app
+- `npm run typecheck` Generate route types + TypeScript check
 
-```bash
-npm run build
-```
+## Docker
 
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
+Build:
 
 ```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+docker build -t resumai .
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+Run:
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+```bash
+docker run -p 3000:3000 resumai
 ```
 
-## Styling
+## Database Tables
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+Defined in `schema.sql`:
 
----
+- `users`
+- `user_sessions`
+- `resumes`
 
-Built with ❤️ using React Router.
+## Common Issues
+
+### `role "postgres" does not exist`
+
+Your local role may not be `postgres`. Update `.env` with your actual DB username (e.g. `rith`).
+
+### `npm ci` fails
+
+Run command inside repo folder containing `package-lock.json`:
+
+```bash
+cd AI-resumeAnalyzer
+npm ci
+```
+
+### AI response returns fenced JSON and page stays on analyzing
+
+The app already handles fenced JSON parsing (` ```json ... ``` `).  
+If it still fails, retry once and check browser console/network for AI service errors.
+
+### `Model not found: claude-3-7-sonnet`
+
+The app now uses provider default model to avoid hardcoded unavailable models.
+
+## Notes
+
+- Keep `.env` local (do not commit secrets).
+- For pgAdmin usage, connect using your existing PostgreSQL role and ensure it matches `.env`.
