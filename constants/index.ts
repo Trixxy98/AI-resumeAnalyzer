@@ -7,6 +7,15 @@ export const resumes: Resume[] = [
     resumePath: "/resumes/resume-1.pdf",
     feedback: {
       overallScore: 85,
+      jdMatch: {
+        score: 88,
+        matchedKeywords: ["React", "TypeScript", "REST API"],
+        missingKeywords: ["CI/CD", "Unit Testing"],
+        priorityImprovements: [
+          "Highlight testing contributions in work experience",
+          "Add CI/CD tooling experience in skills section",
+        ],
+      },
       ATS: {
         score: 90,
         tips: [],
@@ -37,6 +46,15 @@ export const resumes: Resume[] = [
     resumePath: "/resumes/resume-2.pdf",
     feedback: {
       overallScore: 55,
+      jdMatch: {
+        score: 52,
+        matchedKeywords: ["Cloud", "Linux"],
+        missingKeywords: ["Terraform", "Kubernetes", "Monitoring"],
+        priorityImprovements: [
+          "Add infra-as-code project example",
+          "Include observability stack exposure",
+        ],
+      },
       ATS: {
         score: 90,
         tips: [],
@@ -67,6 +85,15 @@ export const resumes: Resume[] = [
     resumePath: "/resumes/resume-3.pdf",
     feedback: {
       overallScore: 75,
+      jdMatch: {
+        score: 71,
+        matchedKeywords: ["Swift", "iOS", "Git"],
+        missingKeywords: ["Unit Testing", "CI/CD"],
+        priorityImprovements: [
+          "Add XCTest-related achievements",
+          "Mention release pipeline or TestFlight workflow",
+        ],
+      },
       ATS: {
         score: 90,
         tips: [],
@@ -94,6 +121,12 @@ export const resumes: Resume[] = [
 export const AIResponseFormat = `
       interface Feedback {
       overallScore: number; //max 100
+      jdMatch: {
+        score: number; //0-100 match between resume and target job description
+        matchedKeywords: string[]; //5-10 relevant keywords already present in the resume
+        missingKeywords: string[]; //5-10 high-impact keywords missing from the resume
+        priorityImprovements: string[]; //3-5 highest-priority actions to improve match score
+      };
       ATS: {
         score: number; //rate based on ATS suitability
         tips: {

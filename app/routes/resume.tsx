@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router';
 import Summary from '~/components/Summary';
 import ATS from '~/components/ATS';
 import Details from '~/components/Details';
+import JDMatch from '~/components/JDMatch';
 
 
 export const meta = () => ([
@@ -78,6 +79,7 @@ const resume = () => {
                 {feedback ? (
                     <div className='animate-in fade-in flex flex-col gap-8 duration-700'>
                         <Summary feedback={feedback} />
+                        {feedback.jdMatch && <JDMatch jdMatch={feedback.jdMatch} />}
                         <ATS score={feedback.ATS.score || 0} suggestions={feedback.ATS.tips || []} />
                         <Details feedback={feedback} />
                         </div>

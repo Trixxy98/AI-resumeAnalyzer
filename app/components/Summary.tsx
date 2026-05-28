@@ -36,6 +36,9 @@ const Summary = ({feedback}: {feedback: Feedback}) => {
         <Category title="Content" score={feedback.content.score}/>
         <Category title="Structure" score={feedback.structure.score}/>
         <Category title="Skills" score={feedback.skills.score}/>
+        {feedback.jdMatch?.score !== undefined && (
+          <Category title="JD Match" score={feedback.jdMatch.score}/>
+        )}
     </div>
   )
 }

@@ -16,6 +16,12 @@ interface Resume {
 
 interface Feedback {
   overallScore: number;
+  jdMatch?: {
+    score: number;
+    matchedKeywords: string[];
+    missingKeywords: string[];
+    priorityImprovements: string[];
+  };
   ATS: {
     score: number;
     tips: {
