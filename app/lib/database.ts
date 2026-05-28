@@ -1,7 +1,7 @@
 import {Pool} from 'pg';
 
 const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
+  user: process.env.DB_USER || process.env.USER || 'postgres',
   host: process.env.DB_HOST || 'localhost',   
     database: process.env.DB_NAME || 'resumai',
     password: process.env.DB_PASSWORD || 'harith1234',

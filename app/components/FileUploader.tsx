@@ -30,8 +30,15 @@ const FileUploader = ({onFileSelect}: FileUploaderProps) => {
     }
   
     return (
-        <div className='w-full gradient-border'>
-            <div {...getRootProps()}>
+        <div className='w-full'>
+            <div
+                {...getRootProps()}
+                className={`rounded-2xl border-2 border-dashed p-6 text-center ${
+                    isDragActive
+                        ? 'border-blue-400 bg-blue-50'
+                        : 'border-slate-300 bg-white hover:border-slate-400'
+                }`}
+            >
                 <input {...getInputProps()} />
                 <div className='space-y-4 cursor-pointer'>
                     {selectedFile ? (
@@ -60,12 +67,12 @@ const FileUploader = ({onFileSelect}: FileUploaderProps) => {
                             <div className='mx-auto w-16 h-16 flex items-center justify-center mb-2'>
                                 <img src='/icons/info.svg' alt='upload' className='size-20'/>
                             </div> 
-                            <p className='text-lg text-gray-500'>
+                            <p className='text-base text-slate-600'>
                                 <span className='font-semibold'>
                                     Click to Upload
                                 </span> or drag and drop
                             </p>
-                            <p className='text-lg text-gray-500'>PDF (max 20 MB)</p>
+                            <p className='text-sm text-slate-500'>PDF (max 20 MB)</p>
                         </div>
                     )}
                 </div>

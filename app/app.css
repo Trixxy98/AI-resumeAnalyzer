@@ -5,11 +5,11 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
-html, body {
-  @apply bg-white antialiased;
+html,
+body {
+  @apply bg-slate-50 text-slate-800 antialiased;
 }
 
-/* Smooth transitions for all interactive elements */
 * {
   transition-property: color, background-color, border-color, transform, box-shadow;
   transition-duration: 200ms;
@@ -31,4 +31,96 @@ html, body {
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400;
+}
+
+.text-gradient {
+  @apply bg-gradient-to-r from-blue-600 via-cyan-500 to-violet-600 bg-clip-text text-transparent;
+}
+
+.gradient-border {
+  @apply rounded-2xl border border-slate-200 bg-white p-6 shadow-sm;
+}
+
+.primary-button {
+  @apply inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.main-section {
+  @apply mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8;
+}
+
+.page-heading {
+  @apply mb-10 text-center;
+}
+
+.page-heading h1 {
+  @apply text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl;
+}
+
+.page-heading h2 {
+  @apply mx-auto mt-3 max-w-2xl text-base text-slate-600 sm:text-lg;
+}
+
+.resumes-section {
+  @apply grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+.navbar {
+  @apply sticky top-0 z-20 border-b border-slate-200/80 bg-white/80 backdrop-blur;
+}
+
+.navbar-inner {
+  @apply mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8;
+}
+
+.uploader-selected-file {
+  @apply flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3;
+}
+
+.resume-nav {
+  @apply sticky top-0 z-20 border-b border-slate-200/80 bg-white/80 px-4 py-3 backdrop-blur sm:px-6;
+}
+
+.back-button {
+  @apply inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50;
+}
+
+.feedback-layout {
+  @apply mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 px-4 pb-8 pt-6 lg:grid-cols-[420px_1fr] lg:px-6;
+}
+
+.feedback-section {
+  @apply rounded-2xl border border-slate-200 bg-white p-6 shadow-sm;
+}
+
+.resume-summary {
+  @apply border-t border-slate-100 px-4 py-3 sm:px-6;
+}
+
+.category {
+  @apply flex items-center justify-between gap-3;
+}
+
+.bg-badge-green {
+  @apply bg-emerald-100;
+}
+
+.bg-badge-yellow {
+  @apply bg-amber-100;
+}
+
+.bg-badge-red {
+  @apply bg-rose-100;
+}
+
+.text-badge-green-text {
+  @apply text-emerald-700;
+}
+
+.text-badge-yellow-text {
+  @apply text-amber-700;
+}
+
+.text-badge-red-text {
+  @apply text-rose-700;
 }

@@ -24,29 +24,60 @@ const upload = () => {
         jobTitle: string;
         jobDescription: string;
         file: File;}) => {
+            const parseFeedbackJson = (rawText: string): Feedback | null => {
+                const trimmed = rawText.trim();
+                const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+                const candidate = fencedMatch ? fencedMatch[1].trim() : trimmed;
+
+                try {
+                    return JSON.parse(candidate);
+                } catch (error) {
+                    console.error('Failed to parse AI feedback JSON:', error);
+                    return null;
+                }
+            };
+
+            try {
             setIsProcessing(true)
             setStatusText('Uploading resume...')
             const uploadedFile = await fs.upload([file])
-            if(!uploadedFile) return setStatusText('Failed to upload file.') 
+            if(!uploadedFile) {
+                setStatusText('Failed to upload file.')
+                return;
+            } 
 
             setStatusText('Analyzing resume...')
             const imageFile = await convertPdfToImage(file)
-            if(!imageFile.file) return setStatusText('Failed to convert PDF to image.')
+            if(!imageFile.file) {
+                setStatusText('Failed to convert PDF to image.')
+                return;
+            }
 
             setStatusText('Uploading the image...')
             const uploadedImage = await fs.upload([imageFile.file])
-            if(!uploadedImage) return setStatusText('Failed to upload image.')
+            if(!uploadedImage) {
+                setStatusText('Failed to upload image.')
+                return;
+            }
 
             setStatusText('Preparing data...')
             const uuid = generateUUID()
-            const data = {
+            const data: {
+                id: string;
+                resumePath: string;
+                imagePath: string;
+                companyName: string;
+                jobTitle: string;
+                jobDescription: string;
+                feedback: Feedback | null;
+            } = {
                 id: uuid,
                 resumePath: uploadedFile.path,
                 imagePath: uploadedImage.path,
                 companyName,
                 jobTitle,
                 jobDescription,
-                feedback:''
+                feedback: null
             }
             await kv.set(`resume_${uuid}`, JSON.stringify(data))
 
@@ -55,16 +86,31 @@ const upload = () => {
                 uploadedFile.path,
                 prepareInstructions({jobTitle, jobDescription})
             )
-            if (!feedback) return setStatusText('Failed to analyze resume.')
+            if (!feedback) {
+                setStatusText('Failed to analyze resume.')
+                return;
+            }
 
             const feedbackText = typeof feedback.message.content === 'string' 
                 ? feedback.message.content
                 : feedback.message.content[0].text
 
-            data.feedback = JSON.parse(feedbackText)
+            const parsedFeedback = parseFeedbackJson(feedbackText)
+            if (!parsedFeedback) {
+                setStatusText('AI response format invalid. Please try again.')
+                return;
+            }
+
+            data.feedback = parsedFeedback
             await kv.set(`resume_${uuid}`, JSON.stringify(data))
             setStatusText('Analysis complete!')
             navigate(`/resume/${uuid}`)
+            } catch (error) {
+                console.error('Resume analysis failed:', error)
+                setStatusText('Analysis failed. Please try again.')
+            } finally {
+                setIsProcessing(false)
+            }
         }
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -83,11 +129,11 @@ const upload = () => {
     
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50/30">
+    <div className="min-h-screen bg-slate-50">
       <Navbar/>
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center space-y-6 mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900">
+          <h1 className="text-4xl sm:text-5xl font-bold text-slate-900">
             Smart Feedback for Your 
             <span className="block text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-purple-600">
               Dream Job
@@ -116,7 +162,7 @@ const upload = () => {
                   type="text" 
                   name="company-name" 
                   placeholder="Google, Microsoft, etc."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
               </div>
               <div className="space-y-2">
@@ -127,7 +173,7 @@ const upload = () => {
                   type="text" 
                   name="job-title" 
                   placeholder="Frontend Developer, etc."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
               </div>
             </div>
@@ -140,7 +186,7 @@ const upload = () => {
                 rows={5} 
                 name="job-description" 
                 placeholder="Paste the job description here..."
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
               />
             </div>
             
@@ -153,7 +199,7 @@ const upload = () => {
             
             <button 
               type="submit" 
-              className="w-full bg-linear-to-br from-blue-500 to-purple-600 text-white py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-xl bg-slate-900 py-4 text-lg font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={!file}
             >
               Analyze Resume

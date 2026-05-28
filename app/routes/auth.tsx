@@ -67,9 +67,9 @@ const Auth = () => {
   };
 
   return (
-    <main className="bg-[url('/images/bg-auth.svg')] bg-cover min-h-screen flex items-center justify-center p-4">
-      <div className='gradient-border shadow-lg w-full max-w-md'>
-        <section className='flex flex-col gap-6 bg-white rounded-2xl p-8'>
+    <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className='w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm'>
+        <section className='flex flex-col gap-6'>
           <div className='flex flex-col items-center gap-2 text-center'>
             <h1 className="text-2xl font-bold text-gradient">
               {mode === 'login' ? 'Welcome Back' : 'Create Account'}
@@ -83,7 +83,7 @@ const Auth = () => {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -101,7 +101,7 @@ const Auth = () => {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required={mode === 'signup'}
                   />
                 </div>
@@ -115,7 +115,7 @@ const Auth = () => {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required={mode === 'signup'}
                   />
                 </div>
@@ -132,7 +132,7 @@ const Auth = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
@@ -147,7 +147,7 @@ const Auth = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
                 minLength={6}
               />
@@ -156,7 +156,7 @@ const Auth = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-b from-blue-600 to-blue-700 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full rounded-lg bg-slate-900 px-4 py-3 font-semibold text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isLoading ? 'Please wait...' : mode === 'login' ? 'Log In' : 'Sign Up'}
             </button>

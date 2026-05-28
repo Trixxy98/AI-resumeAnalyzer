@@ -52,21 +52,21 @@ const resume = () => {
     }, [id])
 
   return (
-    <main className='pt-10'>
+    <main className='min-h-screen bg-slate-50'>
         <nav className='resume-nav'>
             <Link to='/' className='back-button'>
                 <img src='/icons/back.svg' alt='logo' className='w-2.5 h-2.5'/>
-                <span className='text-gray-800 text-sm font-semibold'>Back to Homepage</span>
+                <span className='text-sm font-semibold'>Back to Homepage</span>
             </Link>
         </nav>
-        <div className='flex flex-row w-full max-lg:flex-col-reverse'>
-            <section className="feedback-section bg-[url('/images/bg-small.svg')] bg-cover h-100vh sticky top-0 items-center justify-center">
+        <div className='feedback-layout'>
+            <section className="feedback-section lg:sticky lg:top-20 lg:h-[calc(100vh-7rem)] lg:flex lg:items-center lg:justify-center">
                 {imageUrl && resumeUrl &&(
-                    <div className='animate-in fade-in duration-1000 gradient-border max-sm:m-0 h-[90%] max-2xl:h-fit w-fit'>
+                    <div className='animate-in fade-in duration-700 w-full'>
                         <a href={resumeUrl} target='_blank' rel='noopener noreferrer'>
                             <img
                             src={imageUrl}
-                            className='w-full h-full object-contain rounded-2xl'
+                            className='w-full max-h-[70vh] rounded-xl object-contain'
                             title='resume'
                             />
                         </a>
@@ -74,9 +74,9 @@ const resume = () => {
                     )}
             </section>
             <section className='feedback-section'>
-                <h2 className='text-4xl text-black font-bold'>Resume Review</h2>
+                <h2 className='mb-6 text-3xl font-bold text-slate-900'>Resume Review</h2>
                 {feedback ? (
-                    <div className='flex flex-col gap-8 animate-in fade-in duration-1000'>
+                    <div className='animate-in fade-in flex flex-col gap-8 duration-700'>
                         <Summary feedback={feedback} />
                         <ATS score={feedback.ATS.score || 0} suggestions={feedback.ATS.tips || []} />
                         <Details feedback={feedback} />

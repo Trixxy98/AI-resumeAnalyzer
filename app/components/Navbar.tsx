@@ -12,31 +12,33 @@ const Navbar = () => {
 
   return (
     <nav className='navbar'>
-      <Link to="/">
-        <p className='text-2xl font-bold text-gradient'>RESUMAI</p>
-      </Link>
-      
-      <div className="flex items-center gap-4">
-        {user ? (
-          <>
-            <span className="text-gray-700">
-              Welcome, {user.firstName || user.email}
-            </span>
-            <Link to="/upload" className='primary-button w-fit'>
-              Upload Resume
+      <div className="navbar-inner">
+        <Link to="/">
+          <p className='text-2xl font-bold text-gradient'>RESUMAI</p>
+        </Link>
+
+        <div className="flex items-center gap-3">
+          {user ? (
+            <>
+              <span className="hidden text-sm text-slate-600 md:inline">
+                Hi, {user.firstName || user.email}
+              </span>
+              <Link to="/upload" className='primary-button w-fit'>
+                Upload Resume
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link to="/auth" className='primary-button w-fit'>
+              Login
             </Link>
-            <button 
-              onClick={handleLogout}
-              className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
-            >
-              Logout
-            </button>
-          </>
-        ) : (
-          <Link to="/auth" className='primary-button w-fit'>
-            Login
-          </Link>
-        )}
+          )}
+        </div>
       </div>
     </nav>
   );

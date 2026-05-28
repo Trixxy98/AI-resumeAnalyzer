@@ -3,10 +3,8 @@ import Navbar from "~/components/Navbar";
 import type { Route } from "./+types/home";
 import ResumeCard from "~/components/ResumeCard";
 import { useEffect, useState } from "react";
-import { usePuterStore } from "~/lib/puter";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "~/lib/auth-context";
-import { query } from "~/lib/database";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -16,7 +14,6 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const { auth: puterAuth } = usePuterStore();
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [resumes, setResumes] = useState<Resume[]>([]);
@@ -36,23 +33,24 @@ export default function Home() {
 
       setLoadingResumes(true);
       try {
-        const result = await query(
-          'SELECT * FROM resumes WHERE user_id = $1 ORDER BY created_at DESC',
-          [user.id]
-        );
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const response = await fetch('/api/resumes', {
+          credentials: 'include',
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
 
-        const parsedResumes = result.rows.map(row => ({
-          id: row.id,
-          companyName: row.company_name,
-          jobTitle: row.job_title,
-          imagePath: row.image_path,
-          resumePath: row.resume_path,
-          feedback: row.feedback,
-        }));
+        if (!response.ok) {
+          throw new Error('Failed to fetch resumes');
+        }
+        const payload = await response.json();
+        const parsedResumes = Array.isArray(payload.resumes) ? payload.resumes : [];
 
         setResumes(parsedResumes);
       } catch (error) {
         console.error('Failed to load resumes:', error);
+        setResumes([]);
       } finally {
         setLoadingResumes(false);
       }
@@ -75,7 +73,7 @@ export default function Home() {
 }
 
   return (
-    <main className="bg-[url('/images/bg-main.svg')] bg-cover">
+    <main>
       <Navbar/>
       <section className="main-section">
         <div className="page-heading py-16">
@@ -89,8 +87,9 @@ export default function Home() {
 
         {/* Loading state */}
         {loadingResumes && (
-          <div className="flex flex-col items-center justify-center">
-            <img src='/images/resume-scan-2.gif' className="w-[200px]" alt="Loading"/>
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white py-12">
+            <img src='/images/resume-scan-2.gif' className="w-[180px]" alt="Loading"/>
+            <p className="mt-3 text-sm text-slate-500">Fetching your latest resume insights...</p>
           </div>
         )}
       
@@ -105,8 +104,11 @@ export default function Home() {
 
         {/* No resumes state */}
         {!loadingResumes && resumes?.length === 0 && (
-          <div className="flex flex-col items-center justify-center mt-10 gap-4">
-            <Link to='/upload' className="primary-button w-fit text-xl font-semibold">
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 rounded-2xl border border-slate-200 bg-white py-12 text-center">
+            <p className="max-w-md text-sm text-slate-500">
+              Start by uploading your resume. We will analyze ATS compatibility, tone, structure, and key improvements.
+            </p>
+            <Link to='/upload' className="primary-button w-fit">
               Upload Resume
             </Link>
           </div>
