@@ -6,6 +6,7 @@ import Summary from '~/components/Summary';
 import ATS from '~/components/ATS';
 import Details from '~/components/Details';
 import JDMatch from '~/components/JDMatch';
+import VersionCompare from '~/components/VersionCompare';
 
 
 export const meta = () => ([
@@ -20,6 +21,11 @@ const resume = () => {
     const [imageUrl, setImageUrl] = useState('');
     const [resumeUrl, setResumeUrl] = useState('');
     const [feedback, setFeedback] = useState<Feedback | null>(null);
+    const [resumeVersion, setResumeVersion] = useState(1);
+    const [comparison, setComparison] = useState<ResumeComparison | null>(null);
+    const [versionHistory, setVersionHistory] = useState<
+      { id: string; version: number; createdAt?: string; overallScore?: number; jdMatchScore?: number }[]
+    >([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -32,7 +38,7 @@ const resume = () => {
 
             if(!resume) return;
 
-            const data = JSON.parse(resume);
+            const data = JSON.parse(resume) as Resume;
 
             const resumeBlob = await fs.read(data.resumePath);
             if(!resumeBlob) return;
@@ -46,7 +52,38 @@ const resume = () => {
             const imageUrl = URL.createObjectURL(imageBlob);
             setImageUrl(imageUrl);
             setFeedback(data.feedback);
-            console.log({resumeUrl, imageUrl, feedback: data.feedback});
+            setResumeVersion(data.version || 1);
+            setComparison(data.comparison || null);
+
+            if (data.jobKey) {
+              const versionsRaw = await kv.get(`resume_versions_${data.jobKey}`);
+              if (versionsRaw) {
+                const versionIds = JSON.parse(versionsRaw);
+                if (Array.isArray(versionIds)) {
+                  const historyItems = await Promise.all(
+                    versionIds.map(async (versionId: string) => {
+                      const raw = await kv.get(`resume_${versionId}`);
+                      if (!raw) return null;
+                      const parsed = JSON.parse(raw) as Resume;
+                      return {
+                        id: parsed.id,
+                        version: parsed.version || 1,
+                        createdAt: parsed.createdAt,
+                        overallScore: parsed.feedback?.overallScore,
+                        jdMatchScore: parsed.feedback?.jdMatch?.score,
+                      };
+                    })
+                  );
+                  setVersionHistory(historyItems.filter(Boolean) as {
+                    id: string;
+                    version: number;
+                    createdAt?: string;
+                    overallScore?: number;
+                    jdMatchScore?: number;
+                  }[]);
+                }
+              }
+            }
         }
 
         loadResume();
@@ -79,6 +116,11 @@ const resume = () => {
                 {feedback ? (
                     <div className='animate-in fade-in flex flex-col gap-8 duration-700'>
                         <Summary feedback={feedback} />
+                        <VersionCompare
+                          currentVersion={resumeVersion}
+                          comparison={comparison}
+                          versions={versionHistory}
+                        />
                         {feedback.jdMatch && <JDMatch jdMatch={feedback.jdMatch} />}
                         <ATS score={feedback.ATS.score || 0} suggestions={feedback.ATS.tips || []} />
                         <Details feedback={feedback} />

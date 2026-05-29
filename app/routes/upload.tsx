@@ -8,6 +8,19 @@ import { convertPdfToImage } from '~/lib/pdf2img';
 import { generateUUID } from '~/lib/utils';
 import { prepareInstructions } from '../../constants';
 
+const normalizeKeyPart = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+const buildJobKey = (companyName: string, jobTitle: string) => {
+  const company = normalizeKeyPart(companyName) || 'general';
+  const title = normalizeKeyPart(jobTitle) || 'untitled-role';
+  return `${company}__${title}`;
+};
+
 const upload = () => {
     const {auth, isLoading, fs, ai, kv} = usePuterStore()
     const navigate = useNavigate()
@@ -62,6 +75,22 @@ const upload = () => {
 
             setStatusText('Preparing data...')
             const uuid = generateUUID()
+            const createdAt = new Date().toISOString();
+            const jobKey = buildJobKey(companyName, jobTitle);
+            const versionsIndexKey = `resume_versions_${jobKey}`;
+            const existingVersionsRaw = await kv.get(versionsIndexKey);
+            const existingVersions = (() => {
+                if (!existingVersionsRaw) return [] as string[];
+                try {
+                    const parsed = JSON.parse(existingVersionsRaw);
+                    return Array.isArray(parsed) ? parsed as string[] : [];
+                } catch {
+                    return [] as string[];
+                }
+            })();
+            const version = existingVersions.length + 1;
+            const previousResumeId = existingVersions.length > 0 ? existingVersions[0] : null;
+
             const data: {
                 id: string;
                 resumePath: string;
@@ -70,6 +99,11 @@ const upload = () => {
                 jobTitle: string;
                 jobDescription: string;
                 feedback: Feedback | null;
+                version: number;
+                jobKey: string;
+                createdAt: string;
+                previousResumeId: string | null;
+                comparison: ResumeComparison | null;
             } = {
                 id: uuid,
                 resumePath: uploadedFile.path,
@@ -77,7 +111,12 @@ const upload = () => {
                 companyName,
                 jobTitle,
                 jobDescription,
-                feedback: null
+                feedback: null,
+                version,
+                jobKey,
+                createdAt,
+                previousResumeId,
+                comparison: null,
             }
             await kv.set(`resume_${uuid}`, JSON.stringify(data))
 
@@ -102,7 +141,28 @@ const upload = () => {
             }
 
             data.feedback = parsedFeedback
+
+            if (previousResumeId) {
+                const previousRaw = await kv.get(`resume_${previousResumeId}`);
+                if (previousRaw) {
+                    const previousData = JSON.parse(previousRaw);
+                    if (previousData?.feedback) {
+                        data.comparison = {
+                            previousResumeId,
+                            overallDelta: parsedFeedback.overallScore - (previousData.feedback.overallScore || 0),
+                            atsDelta: parsedFeedback.ATS.score - (previousData.feedback.ATS?.score || 0),
+                            jdMatchDelta:
+                                parsedFeedback.jdMatch?.score !== undefined &&
+                                previousData.feedback.jdMatch?.score !== undefined
+                                    ? parsedFeedback.jdMatch.score - previousData.feedback.jdMatch.score
+                                    : null,
+                        };
+                    }
+                }
+            }
+
             await kv.set(`resume_${uuid}`, JSON.stringify(data))
+            await kv.set(versionsIndexKey, JSON.stringify([uuid, ...existingVersions]))
             setStatusText('Analysis complete!')
             navigate(`/resume/${uuid}`)
             } catch (error) {

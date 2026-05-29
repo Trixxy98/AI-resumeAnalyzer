@@ -12,6 +12,18 @@ interface Resume {
   imagePath: string;
   resumePath: string;
   feedback: Feedback;
+  jobKey?: string;
+  version?: number;
+  createdAt?: string;
+  previousResumeId?: string | null;
+  comparison?: ResumeComparison;
+}
+
+interface ResumeComparison {
+  previousResumeId: string;
+  overallDelta: number;
+  atsDelta: number;
+  jdMatchDelta: number | null;
 }
 
 interface Feedback {
