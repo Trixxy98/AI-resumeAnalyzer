@@ -132,6 +132,95 @@ Defined in `schema.sql`:
 - `user_sessions`
 - `resumes`
 
+## Architecture Diagrams
+
+### ERD (PostgreSQL)
+
+```mermaid
+erDiagram
+    users {
+        UUID id PK
+        VARCHAR email UK
+        VARCHAR password_hash
+        VARCHAR first_name
+        VARCHAR last_name
+        TIMESTAMP created_at
+    }
+
+    user_sessions {
+        UUID id PK
+        UUID user_id FK
+        VARCHAR token UK
+        TIMESTAMP expires_at
+        TIMESTAMP created_at
+    }
+
+    resumes {
+        UUID id PK
+        UUID user_id FK
+        VARCHAR company_name
+        VARCHAR job_title
+        TEXT resume_path
+        TEXT image_path
+        JSONB feedback
+        TIMESTAMP created_at
+    }
+
+    users ||--o{ user_sessions : "has"
+    users ||--o{ resumes : "owns"
+```
+
+### Application Flow
+
+```mermaid
+flowchart TD
+    A[User opens app] --> B{Session cookie exists?}
+    B -- No --> C[Go to /auth]
+    B -- Yes --> D[/api/auth/check]
+    D --> E{Session valid?}
+    E -- No --> C
+    E -- Yes --> F[Home page /]
+
+    C --> G[Login or Signup]
+    G --> H[/api/auth/login or /api/auth/signup]
+    H --> I[Set session cookie]
+    I --> F
+
+    F --> J[Open /upload]
+    J --> K[Fill company, job title, JD, and upload PDF]
+    K --> L[Upload PDF to Puter FS]
+    L --> M[Convert PDF to image]
+    M --> N[Upload image to Puter FS]
+
+    N --> O[Prepare resume record]
+    O --> P[Build jobKey for versioning]
+    P --> Q[Read previous versions from KV]
+    Q --> R[Request AI feedback]
+    R --> S[Parse feedback JSON]
+    S --> T[Compute compare delta vs previous version]
+    T --> U[Save resume data + version index in KV]
+    U --> V[Redirect to /resume/:id]
+
+    V --> W[Load resume details + feedback + version history]
+    W --> X[Render Summary, JD Match, ATS, Details, Version Compare]
+```
+
+### Versioning Flow
+
+```mermaid
+flowchart LR
+    A[New resume analysis] --> B[Create jobKey from company + job title]
+    B --> C[Read KV: resume_versions jobKey]
+    C --> D{Previous versions exist?}
+    D -- No --> E[Set version v1]
+    D -- Yes --> F[Set version latest + 1]
+    F --> G[Get previousResumeId]
+    G --> H[Compute overall, ATS, JD match deltas]
+    E --> I[Save resume id with metadata]
+    H --> I
+    I --> J[Update version list in KV]
+```
+
 ## Common Issues
 
 ### `role "postgres" does not exist`
