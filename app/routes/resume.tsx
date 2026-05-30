@@ -7,6 +7,7 @@ import ATS from '~/components/ATS';
 import Details from '~/components/Details';
 import JDMatch from '~/components/JDMatch';
 import VersionCompare from '~/components/VersionCompare';
+import ActionPlan from '~/components/ActionPlan';
 
 
 export const meta = () => ([
@@ -121,6 +122,7 @@ const resume = () => {
                           comparison={comparison}
                           versions={versionHistory}
                         />
+                        <ActionPlan feedback={feedback} />
                         {feedback.jdMatch && <JDMatch jdMatch={feedback.jdMatch} />}
                         <ATS score={feedback.ATS.score || 0} suggestions={feedback.ATS.tips || []} />
                         <Details feedback={feedback} />

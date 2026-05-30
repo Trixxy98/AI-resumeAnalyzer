@@ -7,6 +7,18 @@ export const resumes: Resume[] = [
     resumePath: "/resumes/resume-1.pdf",
     feedback: {
       overallScore: 85,
+      actionPlan: [
+        {
+          priority: "high",
+          task: "Add 3 job-specific keywords to Summary and Experience sections",
+          reason: "Improves ATS match for target role quickly",
+        },
+        {
+          priority: "medium",
+          task: "Rewrite 2 bullet points with measurable outcomes",
+          reason: "Quantified impact improves recruiter readability",
+        },
+      ],
       jdMatch: {
         score: 88,
         matchedKeywords: ["React", "TypeScript", "REST API"],
@@ -46,6 +58,18 @@ export const resumes: Resume[] = [
     resumePath: "/resumes/resume-2.pdf",
     feedback: {
       overallScore: 55,
+      actionPlan: [
+        {
+          priority: "high",
+          task: "Add missing cloud stack keywords: Terraform, Kubernetes, Monitoring",
+          reason: "Critical gap for Cloud Engineer matching",
+        },
+        {
+          priority: "high",
+          task: "Move most relevant support/cloud projects above less relevant sections",
+          reason: "Improves relevance signal in first screen",
+        },
+      ],
       jdMatch: {
         score: 52,
         matchedKeywords: ["Cloud", "Linux"],
@@ -85,6 +109,18 @@ export const resumes: Resume[] = [
     resumePath: "/resumes/resume-3.pdf",
     feedback: {
       overallScore: 75,
+      actionPlan: [
+        {
+          priority: "high",
+          task: "Add testing workflow (XCTest) under iOS experience",
+          reason: "Common requirement for iOS roles",
+        },
+        {
+          priority: "medium",
+          task: "Include release process keywords like TestFlight and CI",
+          reason: "Strengthens delivery ownership signal",
+        },
+      ],
       jdMatch: {
         score: 71,
         matchedKeywords: ["Swift", "iOS", "Git"],
@@ -121,6 +157,11 @@ export const resumes: Resume[] = [
 export const AIResponseFormat = `
       interface Feedback {
       overallScore: number; //max 100
+      actionPlan: {
+        priority: "high" | "medium" | "low"; //task priority by impact
+        task: string; //clear one-line action item
+        reason: string; //why this action matters
+      }[]; //return 4-7 actionable tasks, prioritized
       jdMatch: {
         score: number; //0-100 match between resume and target job description
         matchedKeywords: string[]; //5-10 relevant keywords already present in the resume
