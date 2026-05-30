@@ -28,6 +28,11 @@ interface ResumeComparison {
 
 interface Feedback {
   overallScore: number;
+  actionPlan?: {
+    priority: "high" | "medium" | "low";
+    task: string;
+    reason?: string;
+  }[];
   jdMatch?: {
     score: number;
     matchedKeywords: string[];
