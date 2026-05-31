@@ -8,6 +8,7 @@ import Details from '~/components/Details';
 import JDMatch from '~/components/JDMatch';
 import VersionCompare from '~/components/VersionCompare';
 import ActionPlan from '~/components/ActionPlan';
+import RewriteAssistant from '~/components/RewriteAssistant';
 
 
 export const meta = () => ([
@@ -22,6 +23,7 @@ const resume = () => {
     const [imageUrl, setImageUrl] = useState('');
     const [resumeUrl, setResumeUrl] = useState('');
     const [feedback, setFeedback] = useState<Feedback | null>(null);
+    const [resumeData, setResumeData] = useState<Resume | null>(null);
     const [resumeVersion, setResumeVersion] = useState(1);
     const [comparison, setComparison] = useState<ResumeComparison | null>(null);
     const [versionHistory, setVersionHistory] = useState<
@@ -40,6 +42,7 @@ const resume = () => {
             if(!resume) return;
 
             const data = JSON.parse(resume) as Resume;
+            setResumeData(data);
 
             const resumeBlob = await fs.read(data.resumePath);
             if(!resumeBlob) return;
@@ -123,6 +126,11 @@ const resume = () => {
                           versions={versionHistory}
                         />
                         <ActionPlan feedback={feedback} />
+                        <RewriteAssistant
+                          feedback={feedback}
+                          jobTitle={resumeData?.jobTitle}
+                          jobDescription={resumeData?.jobDescription}
+                        />
                         {feedback.jdMatch && <JDMatch jdMatch={feedback.jdMatch} />}
                         <ATS score={feedback.ATS.score || 0} suggestions={feedback.ATS.tips || []} />
                         <Details feedback={feedback} />
