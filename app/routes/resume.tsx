@@ -125,7 +125,7 @@ const resume = () => {
                           comparison={comparison}
                           versions={versionHistory}
                         />
-                        <ActionPlan feedback={feedback} />
+                        <ActionPlan feedback={feedback} resumeId={id || "unknown"} />
                         <RewriteAssistant
                           feedback={feedback}
                           jobTitle={resumeData?.jobTitle}
