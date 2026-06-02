@@ -61,13 +61,53 @@ const normalizeActionPlan = (feedback: Feedback): TodoItem[] => {
   }));
 };
 
-const ActionPlan = ({ feedback }: { feedback: Feedback }) => {
+const ActionPlan = ({ feedback, resumeId }: { feedback: Feedback; resumeId: string }) => {
   const [todoItems, setTodoItems] = useState<TodoItem[]>([]);
   const [doneMap, setDoneMap] = useState<Record<string, boolean>>({});
   const generatedTasks = useMemo(() => normalizeActionPlan(feedback), [feedback]);
+  const storageKey = `action_plan_progress_${resumeId}`;
 
   const generatedCount = todoItems.length;
   const completedCount = todoItems.filter((item) => doneMap[item.id]).length;
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw) as {
+        todoItems?: TodoItem[];
+        doneMap?: Record<string, boolean>;
+      };
+
+      if (Array.isArray(parsed.todoItems) && parsed.todoItems.length > 0) {
+        setTodoItems(parsed.todoItems);
+      }
+      if (parsed.doneMap && typeof parsed.doneMap === "object") {
+        setDoneMap(parsed.doneMap);
+      }
+    } catch (error) {
+      console.error("Failed to restore action plan progress:", error);
+    }
+  }, [storageKey]);
+
+  React.useEffect(() => {
+    try {
+      if (!todoItems.length) {
+        localStorage.removeItem(storageKey);
+        return;
+      }
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          todoItems,
+          doneMap,
+        })
+      );
+    } catch (error) {
+      console.error("Failed to persist action plan progress:", error);
+    }
+  }, [todoItems, doneMap, storageKey]);
 
   const handleGenerate = () => {
     setTodoItems(generatedTasks);
@@ -87,6 +127,16 @@ const ActionPlan = ({ feedback }: { feedback: Feedback }) => {
       await navigator.clipboard.writeText(text);
     } catch (error) {
       console.error("Failed to copy checklist:", error);
+    }
+  };
+
+  const handleReset = () => {
+    setTodoItems([]);
+    setDoneMap({});
+    try {
+      localStorage.removeItem(storageKey);
+    } catch (error) {
+      console.error("Failed to reset action plan progress:", error);
     }
   };
 
@@ -112,6 +162,14 @@ const ActionPlan = ({ feedback }: { feedback: Feedback }) => {
             className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Copy Checklist
+          </button>
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={!todoItems.length}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Reset
           </button>
         </div>
       </div>
