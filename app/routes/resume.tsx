@@ -9,6 +9,7 @@ import JDMatch from '~/components/JDMatch';
 import VersionCompare from '~/components/VersionCompare';
 import ActionPlan from '~/components/ActionPlan';
 import RewriteAssistant from '~/components/RewriteAssistant';
+import ExportReportButton from '~/components/ExportReportButton';
 
 
 export const meta = () => ([
@@ -116,7 +117,19 @@ const resume = () => {
                     )}
             </section>
             <section className='feedback-section'>
-                <h2 className='mb-6 text-3xl font-bold text-slate-900'>Resume Review</h2>
+                <div className='mb-6 flex flex-wrap items-center justify-between gap-3'>
+                  <h2 className='text-3xl font-bold text-slate-900'>Resume Review</h2>
+                  {feedback && (
+                    <ExportReportButton
+                      resumeId={id || "unknown"}
+                      resumeData={resumeData}
+                      feedback={feedback}
+                      version={resumeVersion}
+                      comparison={comparison}
+                      versionHistory={versionHistory}
+                    />
+                  )}
+                </div>
                 {feedback ? (
                     <div className='animate-in fade-in flex flex-col gap-8 duration-700'>
                         <Summary feedback={feedback} />
