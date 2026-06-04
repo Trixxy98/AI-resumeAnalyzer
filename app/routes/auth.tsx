@@ -18,6 +18,7 @@ const Auth = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     firstName: '',
     lastName: '',
   });
@@ -47,6 +48,10 @@ const Auth = () => {
       if (mode === 'login') {
         await login(formData.email, formData.password);
       } else {
+        if (formData.password !== formData.confirmPassword) {
+          setError('Password and confirmation password do not match');
+          return;
+        }
         await signup(formData.email, formData.password, formData.firstName, formData.lastName);
       }
       navigate(next);
@@ -61,6 +66,7 @@ const Auth = () => {
     setFormData({
       email: '',
       password: '',
+      confirmPassword: '',
       firstName: '',
       lastName: '',
     });
@@ -152,6 +158,24 @@ const Auth = () => {
                 minLength={6}
               />
             </div>
+
+            {mode === 'signup' && (
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required={mode === 'signup'}
+                  minLength={6}
+                />
+              </div>
+            )}
 
             <button
               type="submit"
