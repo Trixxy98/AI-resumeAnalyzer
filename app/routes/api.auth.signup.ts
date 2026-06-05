@@ -1,6 +1,13 @@
 import { createSession, createUser } from '~/lib/auth';
 import { buildSessionCookie } from '~/lib/session-cookie';
 
+const isStrongPassword = (password: string) =>
+  password.length >= 8 &&
+  /[a-z]/.test(password) &&
+  /[A-Z]/.test(password) &&
+  /\d/.test(password) &&
+  /[^A-Za-z0-9]/.test(password);
+
 export async function action({ request }: { request: Request }) {
   try {
     const body = await request.json();
@@ -13,8 +20,14 @@ export async function action({ request }: { request: Request }) {
       return Response.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    if (password.length < 6) {
-      return Response.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+    if (!isStrongPassword(password)) {
+      return Response.json(
+        {
+          error:
+            'Password must be at least 8 characters and include uppercase, lowercase, number, and special character',
+        },
+        { status: 400 }
+      );
     }
 
     const user = await createUser(email, password, firstName, lastName);
