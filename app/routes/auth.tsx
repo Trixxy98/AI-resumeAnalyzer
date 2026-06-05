@@ -10,6 +10,21 @@ export const meta = () => [
 
 type AuthMode = 'login' | 'signup';
 
+const isStrongPassword = (password: string) =>
+  password.length >= 8 &&
+  /[a-z]/.test(password) &&
+  /[A-Z]/.test(password) &&
+  /\d/.test(password) &&
+  /[^A-Za-z0-9]/.test(password);
+
+const passwordRules = (password: string) => [
+  { label: 'At least 8 characters', passed: password.length >= 8 },
+  { label: 'Has uppercase letter (A-Z)', passed: /[A-Z]/.test(password) },
+  { label: 'Has lowercase letter (a-z)', passed: /[a-z]/.test(password) },
+  { label: 'Has number (0-9)', passed: /\d/.test(password) },
+  { label: 'Has special character (!@#$...)', passed: /[^A-Za-z0-9]/.test(password) },
+];
+
 const Auth = () => {
   const { isLoading, user, login, signup } = useAuth();
   const location = useLocation();
@@ -23,6 +38,7 @@ const Auth = () => {
     lastName: '',
   });
   const [error, setError] = useState('');
+  const passwordChecklist = passwordRules(formData.password);
 
   const next = new URLSearchParams(location.search).get('next') || '/';
 
@@ -48,6 +64,10 @@ const Auth = () => {
       if (mode === 'login') {
         await login(formData.email, formData.password);
       } else {
+        if (!isStrongPassword(formData.password)) {
+          setError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character');
+          return;
+        }
         if (formData.password !== formData.confirmPassword) {
           setError('Password and confirmation password do not match');
           return;
@@ -155,8 +175,20 @@ const Auth = () => {
                 onChange={handleChange}
                 className="w-full rounded-lg border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
-                minLength={6}
+                minLength={8}
               />
+              {mode === 'signup' && (
+                <ul className="mt-2 space-y-1 text-xs">
+                  {passwordChecklist.map((rule) => (
+                    <li
+                      key={rule.label}
+                      className={rule.passed ? 'text-emerald-600' : 'text-slate-500'}
+                    >
+                      {rule.passed ? '✓' : '○'} {rule.label}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             {mode === 'signup' && (
@@ -172,8 +204,21 @@ const Auth = () => {
                   onChange={handleChange}
                   className="w-full rounded-lg border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required={mode === 'signup'}
-                  minLength={6}
+                  minLength={8}
                 />
+                {mode === 'signup' && formData.confirmPassword.length > 0 && (
+                  <p
+                    className={`mt-2 text-xs ${
+                      formData.password === formData.confirmPassword
+                        ? 'text-emerald-600'
+                        : 'text-rose-600'
+                    }`}
+                  >
+                    {formData.password === formData.confirmPassword
+                      ? '✓ Password confirmation matched'
+                      : '✗ Password confirmation does not match'}
+                  </p>
+                )}
               </div>
             )}
 
