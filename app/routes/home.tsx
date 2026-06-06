@@ -8,7 +8,7 @@ import { useAuth } from "~/lib/auth-context";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "ResumAI" },
+    { title: "ResumAI | Home" },
     { name: "description", content: "Smart AI for your resume!" },
   ];
 }
