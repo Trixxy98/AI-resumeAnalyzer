@@ -1,4 +1,4 @@
-import { createSession, createUser } from '~/lib/auth';
+import { createSession, createUser, findUserByEmail } from '~/lib/auth';
 import { buildSessionCookie } from '~/lib/session-cookie';
 
 const isStrongPassword = (password: string) =>
@@ -30,6 +30,11 @@ export async function action({ request }: { request: Request }) {
       );
     }
 
+    const existingUser = await findUserByEmail(email);
+    if (existingUser) {
+      return Response.json({ error: 'Email already registered' }, { status: 409 });
+    }
+
     const user = await createUser(email, password, firstName, lastName);
     const session = await createSession(user.id);
 
@@ -52,6 +57,14 @@ export async function action({ request }: { request: Request }) {
     );
   } catch (error) {
     console.error('Signup failed:', error);
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as { code?: string }).code === '23505'
+    ) {
+      return Response.json({ error: 'Email already registered' }, { status: 409 });
+    }
     return Response.json({ error: 'Failed to create account' }, { status: 500 });
   }
 }
