@@ -11,6 +11,95 @@ import ActionPlan from '~/components/ActionPlan';
 import RewriteAssistant from '~/components/RewriteAssistant';
 import ExportReportButton from '~/components/ExportReportButton';
 
+const normalizeFeedback = (rawFeedback: unknown): Feedback | null => {
+  if (!rawFeedback || typeof rawFeedback !== 'object') return null;
+
+  const data = rawFeedback as Partial<Feedback>;
+  const normalizeTipsWithExplanation = (
+    tips: unknown
+  ): { type: "good" | "improve"; tip: string; explanation: string }[] => {
+    if (!Array.isArray(tips)) return [];
+    return tips
+      .filter((item) => item && typeof item === 'object')
+      .map((item) => {
+        const tipData = item as { type?: unknown; tip?: unknown; explanation?: unknown };
+        const typeValue: "good" | "improve" = tipData.type === 'good' ? 'good' : 'improve';
+        return {
+          type: typeValue,
+          tip: typeof tipData.tip === 'string' ? tipData.tip : '',
+          explanation: typeof tipData.explanation === 'string' ? tipData.explanation : '',
+        };
+      })
+      .filter((item) => item.tip.length > 0);
+  };
+
+  const normalizeAtsTips = (tips: unknown): { type: "good" | "improve"; tip: string }[] => {
+    if (!Array.isArray(tips)) return [];
+    return tips
+      .filter((item) => item && typeof item === 'object')
+      .map((item) => {
+        const tipData = item as { type?: unknown; tip?: unknown };
+        const typeValue: "good" | "improve" = tipData.type === 'good' ? 'good' : 'improve';
+        return {
+          type: typeValue,
+          tip: typeof tipData.tip === 'string' ? tipData.tip : '',
+        };
+      })
+      .filter((item) => item.tip.length > 0);
+  };
+
+  return {
+    overallScore: typeof data.overallScore === 'number' ? data.overallScore : 0,
+    actionPlan: Array.isArray(data.actionPlan)
+      ? data.actionPlan
+          .map((item) => ({
+            priority:
+              item?.priority === 'high' || item?.priority === 'medium' || item?.priority === 'low'
+                ? item.priority
+                : 'medium',
+            task: typeof item?.task === 'string' ? item.task : '',
+            reason: typeof item?.reason === 'string' ? item.reason : undefined,
+          }))
+          .filter((item) => item.task.length > 0)
+      : [],
+    jdMatch:
+      data.jdMatch && typeof data.jdMatch === 'object'
+        ? {
+            score: typeof data.jdMatch.score === 'number' ? data.jdMatch.score : 0,
+            matchedKeywords: Array.isArray(data.jdMatch.matchedKeywords)
+              ? data.jdMatch.matchedKeywords.filter((item): item is string => typeof item === 'string')
+              : [],
+            missingKeywords: Array.isArray(data.jdMatch.missingKeywords)
+              ? data.jdMatch.missingKeywords.filter((item): item is string => typeof item === 'string')
+              : [],
+            priorityImprovements: Array.isArray(data.jdMatch.priorityImprovements)
+              ? data.jdMatch.priorityImprovements.filter((item): item is string => typeof item === 'string')
+              : [],
+          }
+        : undefined,
+    ATS: {
+      score: typeof data.ATS?.score === 'number' ? data.ATS.score : 0,
+      tips: normalizeAtsTips(data.ATS?.tips),
+    },
+    toneAndStyle: {
+      score: typeof data.toneAndStyle?.score === 'number' ? data.toneAndStyle.score : 0,
+      tips: normalizeTipsWithExplanation(data.toneAndStyle?.tips),
+    },
+    content: {
+      score: typeof data.content?.score === 'number' ? data.content.score : 0,
+      tips: normalizeTipsWithExplanation(data.content?.tips),
+    },
+    structure: {
+      score: typeof data.structure?.score === 'number' ? data.structure.score : 0,
+      tips: normalizeTipsWithExplanation(data.structure?.tips),
+    },
+    skills: {
+      score: typeof data.skills?.score === 'number' ? data.skills.score : 0,
+      tips: normalizeTipsWithExplanation(data.skills?.tips),
+    },
+  };
+};
+
 
 export const meta = () => ([
     {title: 'ResumAI | Review'},
@@ -56,7 +145,7 @@ const resume = () => {
             if(!imageBlob) return;
             const imageUrl = URL.createObjectURL(imageBlob);
             setImageUrl(imageUrl);
-            setFeedback(data.feedback);
+            setFeedback(normalizeFeedback(data.feedback));
             setResumeVersion(data.version || 1);
             setComparison(data.comparison || null);
 
