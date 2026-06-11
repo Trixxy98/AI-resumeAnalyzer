@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { usePuterStore } from "~/lib/puter";
+import { useDebounce } from "~/hooks/useDebounce";
 
 type RewriteSection = "summary" | "experience" | "skills";
 
@@ -8,6 +9,8 @@ const sectionLabel: Record<RewriteSection, string> = {
   experience: "Work Experience",
   skills: "Skills Section",
 };
+
+const draftStorageKey = (section: RewriteSection) => `rewrite_draft_${section}`;
 
 const RewriteAssistant = ({
   feedback,
@@ -24,11 +27,34 @@ const RewriteAssistant = ({
   const [rewrittenText, setRewrittenText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
+  const debouncedOriginalText = useDebounce(originalText, 450);
 
   const suggestedKeywords = useMemo(
     () => feedback.jdMatch?.missingKeywords?.slice(0, 8) || [],
     [feedback]
   );
+
+  React.useEffect(() => {
+    try {
+      const cached = localStorage.getItem(draftStorageKey(section));
+      setOriginalText(cached || "");
+    } catch (cacheError) {
+      console.error("Failed to load rewrite draft:", cacheError);
+    }
+  }, [section]);
+
+  React.useEffect(() => {
+    try {
+      const key = draftStorageKey(section);
+      if (!debouncedOriginalText.trim()) {
+        localStorage.removeItem(key);
+        return;
+      }
+      localStorage.setItem(key, debouncedOriginalText);
+    } catch (cacheError) {
+      console.error("Failed to save rewrite draft:", cacheError);
+    }
+  }, [section, debouncedOriginalText]);
 
   const handleRewrite = async () => {
     if (!originalText.trim()) {
@@ -43,6 +69,8 @@ const RewriteAssistant = ({
     setIsGenerating(true);
     setError("");
 
+    const rewriteSourceText = debouncedOriginalText.trim() ? debouncedOriginalText : originalText;
+
     const prompt = `
 You are an expert resume writer.
 
@@ -54,7 +82,7 @@ Target job title: ${jobTitle || "Not provided"}
 Target job description: ${jobDescription || "Not provided"}
 
 Current section text:
-${originalText}
+${rewriteSourceText}
 
 Relevant guidance:
 - Overall score: ${feedback.overallScore}
