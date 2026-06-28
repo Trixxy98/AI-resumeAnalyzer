@@ -1,8 +1,23 @@
 import { createSession, findUserByEmail, verifyPassword } from '~/lib/auth';
 import { buildSessionCookie } from '~/lib/session-cookie';
+import { checkRateLimit } from '~/lib/rate-limit';
+
+const LOGIN_RATE_LIMIT = { max: 10, windowMs: 15 * 60 * 1000 }; // 10 attempts per 15 min
 
 export async function action({ request }: { request: Request }) {
   try {
+    const ip = request.headers.get('x-forwarded-for') ?? request.headers.get('cf-connecting-ip') ?? 'unknown';
+    const rateLimit = checkRateLimit(`login:${ip}`, LOGIN_RATE_LIMIT);
+    if (!rateLimit.allowed) {
+      return Response.json(
+        { error: 'Too many login attempts. Please try again later.' },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(Math.ceil((rateLimit.resetAt - Date.now()) / 1000)) },
+        }
+      );
+    }
+
     const body = await request.json();
     const email = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '');

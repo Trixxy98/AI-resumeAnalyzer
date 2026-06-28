@@ -1,5 +1,11 @@
 import { createSession, createUser, findUserByEmail } from '~/lib/auth';
 import { buildSessionCookie } from '~/lib/session-cookie';
+import { checkRateLimit } from '~/lib/rate-limit';
+
+const SIGNUP_RATE_LIMIT = { max: 5, windowMs: 60 * 60 * 1000 }; // 5 signups per hour
+
+const isValidEmail = (email: string) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const isStrongPassword = (password: string) =>
   password.length >= 8 &&
@@ -10,6 +16,18 @@ const isStrongPassword = (password: string) =>
 
 export async function action({ request }: { request: Request }) {
   try {
+    const ip = request.headers.get('x-forwarded-for') ?? request.headers.get('cf-connecting-ip') ?? 'unknown';
+    const rateLimit = checkRateLimit(`signup:${ip}`, SIGNUP_RATE_LIMIT);
+    if (!rateLimit.allowed) {
+      return Response.json(
+        { error: 'Too many signup attempts. Please try again later.' },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(Math.ceil((rateLimit.resetAt - Date.now()) / 1000)) },
+        }
+      );
+    }
+
     const body = await request.json();
     const email = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '');
@@ -18,6 +36,10 @@ export async function action({ request }: { request: Request }) {
 
     if (!email || !password) {
       return Response.json({ error: 'Email and password are required' }, { status: 400 });
+    }
+
+    if (!isValidEmail(email)) {
+      return Response.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
     if (!isStrongPassword(password)) {

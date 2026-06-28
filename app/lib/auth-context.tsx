@@ -23,23 +23,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const getSessionToken = () => {
-        return document.cookie
-        .split('; ')
-        .find(row => row.startsWith('session='))
-        ?.split('=')[1];
-    }
-
-    const setSessionToken = (token: string, expiresAt: Date | string) => {
-        const expiryDate = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
-        const expires = expiryDate.toUTCString();
-        document.cookie = `session=${token}; expires=${expires}; path=/; SameSite=Lax`;
-    }
-
-    const removeSessionToken = () => {
-        document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
-    }
-
     const requestJson = async <T,>(url: string, options?: RequestInit): Promise<T> => {
         const response = await fetch(url, {
             credentials: 'include',
@@ -86,12 +69,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 });
             } else {
                 setUser(null);
-                removeSessionToken();
             }   
         } catch (error) {
             console.error('Error checking auth:', error);
             setUser(null);
-            removeSessionToken();
         } finally {
             setIsLoading(false);
         }   
@@ -106,12 +87,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 first_name?: string;
                 last_name?: string;
                 created_at: string;
-            }; session: { token: string; expires_at: string } }>('/api/auth/login', {
+            } }>('/api/auth/login', {
                 method: 'POST',
                 body: JSON.stringify({ email, password }),
             });
-
-            setSessionToken(data.session.token, data.session.expires_at);
 
             setUser({
                 id: data.user.id,
@@ -134,12 +113,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 first_name?: string;
                 last_name?: string;
                 created_at: string;
-            }; session: { token: string; expires_at: string } }>('/api/auth/signup', {
+            } }>('/api/auth/signup', {
                 method: 'POST',
                 body: JSON.stringify({ email, password, firstName, lastName }),
             });
-
-            setSessionToken(data.session.token, data.session.expires_at);
 
             setUser({
                 id: data.user.id,
@@ -157,7 +134,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await requestJson<{ success: boolean }>('/api/auth/logout', {
             method: 'POST',
         });
-        removeSessionToken();
         setUser(null);
     };
 

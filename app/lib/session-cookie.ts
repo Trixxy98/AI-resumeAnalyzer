@@ -13,9 +13,11 @@ export function getSessionTokenFromCookie(cookieHeader: string | null): string |
 
 export function buildSessionCookie(token: string, expiresAt: Date | string): string {
   const expires = (expiresAt instanceof Date ? expiresAt : new Date(expiresAt)).toUTCString();
-  return `session=${token}; Expires=${expires}; Path=/; SameSite=Lax`;
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  return `session=${token}; Expires=${expires}; Path=/; HttpOnly; SameSite=Lax${secure}`;
 }
 
 export function buildExpiredSessionCookie(): string {
-  return 'session=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax';
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  return `session=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; HttpOnly; SameSite=Lax${secure}`;
 }
