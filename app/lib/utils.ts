@@ -19,3 +19,20 @@ export function formatSize(bytes: number): string {
 }
 
 export const generateUUID = () => crypto.randomUUID();
+
+/**
+ * Parses AI feedback JSON response.
+ * Handles cases where the AI wraps the JSON in markdown code fences.
+ */
+export function parseFeedbackJson(rawText: string): Feedback | null {
+  const trimmed = rawText.trim();
+  const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  const candidate = fencedMatch ? fencedMatch[1].trim() : trimmed;
+  try {
+    return JSON.parse(candidate) as Feedback;
+  } catch (error) {
+    console.error('Failed to parse AI feedback JSON:', error);
+    return null;
+  }
+}
+

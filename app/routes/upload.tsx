@@ -5,8 +5,9 @@ import FileUploader from '~/components/FileUploader';
 import { usePuterStore } from '~/lib/puter';
 import { useNavigate } from 'react-router';
 import { convertPdfToImage } from '~/lib/pdf2img';
-import { generateUUID } from '~/lib/utils';
+import { generateUUID, parseFeedbackJson } from '~/lib/utils';
 import { prepareInstructions } from '../../constants';
+import { useAuthGuard } from '~/hooks/useAuthGuard';
 
 const normalizeKeyPart = (value: string) =>
   value
@@ -21,9 +22,10 @@ const buildJobKey = (companyName: string, jobTitle: string) => {
   return `${company}__${title}`;
 };
 
-const upload = () => {
+const Upload = () => {
     const {auth, isLoading, fs, ai, kv} = usePuterStore()
     const navigate = useNavigate()
+    useAuthGuard('/upload')
     const [isProcessing, setIsProcessing] = useState(false)
     const [statusText, setStatusText] = useState('')
     const [file, setFile] = useState<File | null>(null)
@@ -37,18 +39,6 @@ const upload = () => {
         jobTitle: string;
         jobDescription: string;
         file: File;}) => {
-            const parseFeedbackJson = (rawText: string): Feedback | null => {
-                const trimmed = rawText.trim();
-                const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-                const candidate = fencedMatch ? fencedMatch[1].trim() : trimmed;
-
-                try {
-                    return JSON.parse(candidate);
-                } catch (error) {
-                    console.error('Failed to parse AI feedback JSON:', error);
-                    return null;
-                }
-            };
 
             try {
             setIsProcessing(true)
@@ -271,4 +261,4 @@ const upload = () => {
   )
 }
 
-export default upload
+export default Upload
