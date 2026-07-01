@@ -15,17 +15,19 @@ Users can sign up, upload a PDF resume, run AI feedback analysis, and review ATS
 ## Core Features
 
 - Email/password authentication with DB-backed session tokens
+- Strong password enforcement (min 8 chars, uppercase, lowercase, number, special character)
+- HttpOnly session cookies — JS cannot access session token (XSS-safe)
+- Rate limiting: 10 login attempts / 15 min, 5 signups / hour per IP
 - Resume upload (PDF)
 - PDF-to-image conversion for preview
 - AI feedback parsing into structured JSON score data
+- Resume versioning + score comparison across versions per job target
+- JD (job description) match score with matched/missing keywords
+- Action plan checklist with local storage persistence
+- Resume rewrite assistant (AI-powered, per section)
+- Export PDF report (browser print)
+- Auto logout on inactivity (`useSessionTimeout`)
 - Resume history listing per user
-- Detailed review page:
-  - Overall score
-  - ATS score + tips
-  - Tone & style
-  - Content
-  - Structure
-  - Skills
 
 ## Routes
 
@@ -105,10 +107,43 @@ App URL: `http://localhost:5173`
 
 ## Scripts
 
-- `npm run dev` Run development server
-- `npm run build` Build production output
-- `npm run start` Serve built app
-- `npm run typecheck` Generate route types + TypeScript check
+- `npm run dev` — Run development server
+- `npm run build` — Build production output
+- `npm run start` — Serve built app
+- `npm run typecheck` — Generate route types + TypeScript check
+
+## Project Structure
+
+```
+app/
+├── components/       # Reusable UI components
+│   ├── ErrorBoundary.tsx     # Global error catcher
+│   ├── SessionTimeoutManager.tsx
+│   ├── ActionPlan.tsx
+│   ├── ExportReportButton.tsx
+│   ├── JDMatch.tsx
+│   ├── RewriteAssistant.tsx
+│   └── VersionCompare.tsx
+├── hooks/            # Custom React hooks
+│   ├── useAuthGuard.ts       # Redirect unauthenticated users
+│   ├── useDebounce.ts        # Debounce heavy inputs
+│   └── useSessionTimeout.ts  # Auto logout on inactivity
+├── lib/              # Shared utilities and server logic
+│   ├── auth.ts               # Password hashing, session CRUD
+│   ├── auth-context.tsx      # React auth context
+│   ├── database.ts           # PostgreSQL pool
+│   ├── rate-limit.ts         # In-memory rate limiter
+│   ├── session-cookie.ts     # Cookie builder (HttpOnly + Secure)
+│   └── utils.ts              # parseFeedbackJson, generateUUID, cn
+├── routes/           # Pages + API handlers
+│   ├── home.tsx
+│   ├── upload.tsx
+│   ├── resume.tsx
+│   ├── auth.tsx
+│   └── api.auth.*.ts / api.resumes.ts
+constants/
+└── index.ts          # AI prompt instructions and response format
+```
 
 ## Docker
 
@@ -220,6 +255,14 @@ flowchart LR
     H --> I
     I --> J[Update version list in KV]
 ```
+
+## Security Notes
+
+- Session cookies are `HttpOnly` — cannot be accessed via JavaScript
+- `Secure` flag is enabled automatically in production (HTTPS)
+- Passwords are hashed with bcrypt (12 salt rounds)
+- Rate limiting is in-memory — on multi-instance deployments, replace with Redis
+- `.env` must never be committed to git
 
 ## Common Issues
 

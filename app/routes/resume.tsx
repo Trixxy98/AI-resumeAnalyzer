@@ -12,6 +12,12 @@ import RewriteAssistant from '~/components/RewriteAssistant';
 import ExportReportButton from '~/components/ExportReportButton';
 import { useAuthGuard } from '~/hooks/useAuthGuard';
 
+
+/**
+ * Sanitizes raw feedback data from KV store.
+ * Provides default values for all fields to ensure backward compatibility
+ * with older resume records that may have incomplete feedback structures.
+ */
 const normalizeFeedback = (rawFeedback: unknown): Feedback | null => {
   if (!rawFeedback || typeof rawFeedback !== 'object') return null;
 
