@@ -10,6 +10,7 @@ import VersionCompare from '~/components/VersionCompare';
 import ActionPlan from '~/components/ActionPlan';
 import RewriteAssistant from '~/components/RewriteAssistant';
 import ExportReportButton from '~/components/ExportReportButton';
+import { useAuthGuard } from '~/hooks/useAuthGuard';
 
 const normalizeFeedback = (rawFeedback: unknown): Feedback | null => {
   if (!rawFeedback || typeof rawFeedback !== 'object') return null;
@@ -121,9 +122,7 @@ const Resume = () => {
     >([]);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if(!isLoading && !auth.isAuthenticated) navigate(`/auth?next=/resume/${id}`);
-    }, [isLoading])
+    useAuthGuard(`/resume/${id}`);
 
     useEffect(() => {
         const loadResume = async () => {
