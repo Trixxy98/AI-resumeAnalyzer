@@ -210,19 +210,19 @@ erDiagram
 ```mermaid
 flowchart TD
     A[User opens app] --> B{Session cookie exists?}
-    B -- No --> C[Go to /auth]
-    B -- Yes --> D[/api/auth/check]
+    B -- No --> C["Go to /auth"]
+    B -- Yes --> D["/api/auth/check"]
     D --> E{Session valid?}
     E -- No --> C
-    E -- Yes --> F[Home page /]
+    E -- Yes --> F["Home page /"]
 
     C --> G[Login or Signup]
-    G --> H[/api/auth/login or /api/auth/signup]
+    G --> H["/api/auth/login or /api/auth/signup"]
     H --> I[Set session cookie]
     I --> F
 
-    F --> J[Open /upload]
-    J --> K[Fill company, job title, JD, and upload PDF]
+    F --> J["Open /upload"]
+    J --> K["Fill company, job title, JD, and upload PDF"]
     K --> L[Upload PDF to Puter FS]
     L --> M[Convert PDF to image]
     M --> N[Upload image to Puter FS]
@@ -234,10 +234,10 @@ flowchart TD
     R --> S[Parse feedback JSON]
     S --> T[Compute compare delta vs previous version]
     T --> U[Save resume data + version index in KV]
-    U --> V[Redirect to /resume/:id]
+    U --> V["Redirect to /resume/:id"]
 
     V --> W[Load resume details + feedback + version history]
-    W --> X[Render Summary, JD Match, ATS, Details, Version Compare]
+    W --> X["Render Summary, JD Match, ATS, Details, Version Compare"]
 ```
 
 ### Versioning Flow
