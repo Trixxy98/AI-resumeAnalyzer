@@ -107,7 +107,7 @@ export const meta = () => ([
 ])
 
 
-const resume = () => {
+const Resume = () => {
     const {auth, isLoading, fs,kv} = usePuterStore();
     const {id} = useParams();
     const [imageUrl, setImageUrl] = useState('');
@@ -138,13 +138,15 @@ const resume = () => {
             if(!resumeBlob) return;
 
             const pdfBlob = new Blob([resumeBlob], {type: 'application/pdf'});
-            const resumeUrl = URL.createObjectURL(pdfBlob);
-            setResumeUrl(resumeUrl);
+            const currentResumeUrl = URL.createObjectURL(pdfBlob);
+            setResumeUrl(currentResumeUrl);
+
 
             const imageBlob = await fs.read(data.imagePath);
             if(!imageBlob) return;
-            const imageUrl = URL.createObjectURL(imageBlob);
-            setImageUrl(imageUrl);
+            const currentImageUrl = URL.createObjectURL(imageBlob);
+            setImageUrl(currentImageUrl);
+        
             setFeedback(normalizeFeedback(data.feedback));
             setResumeVersion(data.version || 1);
             setComparison(data.comparison || null);
@@ -181,6 +183,11 @@ const resume = () => {
         }
 
         loadResume();
+
+        return () => {
+            if (resumeUrl) URL.revokeObjectURL(resumeUrl);
+            if (imageUrl) URL.revokeObjectURL(imageUrl);
+        }
     }, [id])
 
   return (
@@ -247,4 +254,4 @@ const resume = () => {
   )
 }
 
-export default resume
+export default Resume

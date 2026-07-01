@@ -21,7 +21,7 @@ const buildJobKey = (companyName: string, jobTitle: string) => {
   return `${company}__${title}`;
 };
 
-const upload = () => {
+const Upload = () => {
     const {auth, isLoading, fs, ai, kv} = usePuterStore()
     const navigate = useNavigate()
     const [isProcessing, setIsProcessing] = useState(false)
@@ -271,4 +271,4 @@ const upload = () => {
   )
 }
 
-export default upload
+export default Upload
